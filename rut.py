@@ -321,7 +321,7 @@ def main():
                     logger.info("[CPM] Trigger CPM task [{0}] for devName=[{1}], account=[{2}]".format(action, account["devName"], account["account"]))
                 else:
                     logger.info(
-                        "[CPM] Skip trigger CPM task [{0}] for devName=[{1}], account=[{2}], because of cpmDisabled=True".format(
+                        "[CPM] Skip trigger CPM task [{0}] for devName=[{1}], account=[{2}], because of cpmDisabled=True or action is empty".format(
                             action, account["devName"], account["account"]))
                 continue
             elif mode == "cpm":
