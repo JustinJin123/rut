@@ -192,10 +192,10 @@ class PAM:
             account.pop("cpmDisabledDesc")
         account["type"] = 1 if account["type"] == "local" else 2;
 
-        action = account["action"]
-        account.pop("action")
+        if "action" in account.keys():
+            account.pop("action")
 
-        # add account
+            # add account
         url = self.pvwa + "/api/account"
         payload = json.dumps(account)
         response = requests.request("POST", url, headers=self.headers, data=payload, verify=False)
@@ -300,7 +300,7 @@ def main():
             logger.info("Start to add device")
             for device in devlist:
                 logger.info("Add device: " + device["name"])
-                pam.add_device(device)
+                # pam.add_device(device)
                 logger.info("End of add device")
             logger.info("Finish Device")
         else:
@@ -316,10 +316,9 @@ def main():
                 logger.info("End of Add account")
                 if mode == "data":  ## continue the loop, skip to execute cpm action
                     continue
-                if account.get("cpmDisabled", False) == False:
+                if account.get("cpmDisabled", False) == False and action != "":
                     pam.trigger_cpm_task(accId, action)
-                    logger.info("[CPM] Trigger CPM task [{0}] for devName=[{1}], account=[{2}]".format(action, account[
-                        "devName"], account["account"]))
+                    logger.info("[CPM] Trigger CPM task [{0}] for devName=[{1}], account=[{2}]".format(action, account["devName"], account["account"]))
                 else:
                     logger.info(
                         "[CPM] Skip trigger CPM task [{0}] for devName=[{1}], account=[{2}], because of cpmDisabled=True".format(
