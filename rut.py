@@ -300,7 +300,7 @@ def main():
             logger.info("Start to add device")
             for device in devlist:
                 logger.info("Add device: " + device["name"])
-                # pam.add_device(device)
+                pam.add_device(device)
                 logger.info("End of add device")
             logger.info("Finish Device")
         else:
