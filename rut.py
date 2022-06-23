@@ -74,6 +74,8 @@ class PAM:
     token = ""
     headers = None
     devType = {}
+    cpmPolicy = {}
+    network = {}
 
     def __init__(self, address, username, password):
         self.pvwa = "https://" + address
@@ -90,22 +92,32 @@ class PAM:
             "Content-Type": "application/json"
         }
         self.devType = self.get_device_type()
+        self.cpmPolicy = self.get_cpm_policy()
+        self.network = self.get_network()
 
-    def transform(self, device):
+    def transform(self, item):
         result = {}
-        for key in device.keys():
+        for key in item.keys():
             if key == "devType":
-                result["devTypeId"] = self.devType[device["devType"]]
-            elif key == "devType":
-                continue
+                if item["devType"] not in self.devType.keys():
+                    raise Exception("Device Type Name [{0}] does not exist".format(item["devType"]))
+                result["devTypeId"] = self.devType[item["devType"]] # set devType Id
+            elif key == "network":
+                if item["network"] not in self.network.keys():
+                    raise Exception("Network name [{0}] does not exist".format(item["network"]))
+                result["networkId"] = self.network[item["network"]]  # set network Id
+            elif key == "cpmPolicy":
+                if item["cpmPolicy"] not in self.cpmPolicy.keys():
+                    raise Exception("CPM Policy Name [{0}] does not exist".format(item["cpmPolicy"]))
+                result["cpmPolicyId"] = self.cpmPolicy[item["cpmPolicy"]]  # set CPM policy Id
             elif "assAttrs." in key or "cusAttrs." in key:
                 key1 = key.split(".")[0]
                 key2 = key.split(".")[1]
                 if result.get(key1, None) is None:
                     result[key1] = {}
-                result[key1][key2] = device[key]
+                result[key1][key2] = item[key]
             else:
-                result[key] = device[key]
+                result[key] = item[key]
         return result
 
     def add_device(self, device):
@@ -263,6 +275,28 @@ class PAM:
             result[devType["name"]] = devType["id"]
         return result
 
+    def get_network(self):
+        url = self.pvwa + "/api/system/model/network"
+        response = requests.request("GET", url, headers=self.headers, verify=False)
+        if response.status_code != 200:
+            raise Exception(response.text)
+        result = {}
+        networkList = json.loads(response.text)
+        for network in networkList:
+            result[network["name"]] = network["id"]
+        return result
+
+    def get_cpm_policy(self):
+        url = self.pvwa + "/api/cpm/policy"
+        response = requests.request("GET", url, headers=self.headers, verify=False)
+        if response.status_code != 200:
+            raise Exception(response.text)
+        result = {}
+        cpmPolicyList = json.loads(response.text)["content"]
+        for cpmPolicy in cpmPolicyList:
+            result[cpmPolicy["name"]] = cpmPolicy["cpmPolicyId"]
+        return result
+
 
 ###############################################################################################
 def main():
@@ -300,7 +334,7 @@ def main():
             logger.info("Start to add device")
             for device in devlist:
                 logger.info("Add device: " + device["name"])
-                pam.add_device(device)
+                # pam.add_device(device)
                 logger.info("End of add device")
             logger.info("Finish Device")
         else:
