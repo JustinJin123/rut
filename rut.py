@@ -292,9 +292,9 @@ class PAM:
         if response.status_code != 200:
             raise Exception(response.text)
         result = {}
-        cpmPolicyList = json.loads(response.text)["content"]
+        cpmPolicyList = json.loads(response.text)
         for cpmPolicy in cpmPolicyList:
-            result[cpmPolicy["name"]] = cpmPolicy["cpmPolicyId"]
+            result[cpmPolicy["name"]] = cpmPolicy["id"]
         return result
 
 
@@ -334,7 +334,7 @@ def main():
             logger.info("Start to add device")
             for device in devlist:
                 logger.info("Add device: " + device["name"])
-                # pam.add_device(device)
+                pam.add_device(device)
                 logger.info("End of add device")
             logger.info("Finish Device")
         else:
